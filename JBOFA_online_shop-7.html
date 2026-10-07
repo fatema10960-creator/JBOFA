@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JBOFA — Online Shop</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,"Noto Sans Bengali",sans-serif;background:#f7f7f8;color:#171717}
+header{background:#111;color:#fff;position:sticky;top:0;z-index:10}
+.nav{max-width:1100px;margin:auto;padding:14px 18px;display:flex;align-items:center;gap:14px}
+.logo{font-size:25px;font-weight:800;letter-spacing:1px}
+.search{flex:1;display:flex;background:#fff;border-radius:24px;overflow:hidden}
+.search input{width:100%;border:0;outline:0;padding:11px 15px;font-size:15px}
+.cart-btn{border:0;background:#fff;padding:10px 14px;border-radius:20px;font-weight:bold;cursor:pointer}
+.hero{max-width:1100px;margin:18px auto;padding:35px 22px;border-radius:18px;background:linear-gradient(135deg,#171717,#3b3b3b);color:#fff}
+.hero h1{font-size:38px;margin-bottom:10px}.hero p{color:#ddd;margin-bottom:18px}
+.shop-btn{display:inline-block;background:#fff;color:#111;padding:11px 18px;border-radius:24px;text-decoration:none;font-weight:bold}
+main{max-width:1100px;margin:auto;padding:0 18px 40px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:25px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.card{background:#fff;border-radius:15px;overflow:hidden;box-shadow:0 2px 10px #0000000b}
+.pic{height:190px;background:#e9e9eb;display:flex;align-items:center;justify-content:center;overflow:hidden}.pic img{width:100%;height:100%;object-fit:cover}
+.info{padding:13px}.info h3{font-size:16px;margin-bottom:7px}.price{font-weight:800;margin-bottom:10px}
+.add{width:100%;border:0;background:#111;color:#fff;padding:10px;border-radius:9px;cursor:pointer}
+.empty{padding:35px;text-align:center;color:#777;background:#fff;border-radius:15px}
+footer{background:#111;color:#aaa;text-align:center;padding:25px}
+.admin{max-width:1100px;margin:10px auto 35px;padding:20px 18px;background:#111;color:#fff;border-radius:16px}
+.admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.admin-head button{border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
+.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.admin-card{background:#222;padding:18px;border-radius:12px}.admin-card b{display:block;font-size:25px}.admin-card span{color:#bbb}
+.orders{background:#fff;color:#111;padding:15px;border-radius:12px}.order-row{border-bottom:1px solid #ddd;padding:13px 0}
+.order-row:last-child{border-bottom:0}.order-row select{float:right;padding:6px;border-radius:7px}
+@media(max-width:600px){.admin-grid{grid-template-columns:1fr}.admin-head h2{font-size:19px}}
+.checkout{background:#fff;margin:30px 0;padding:20px;border-radius:16px;box-shadow:0 2px 12px #0000000b}
+.checkout h2{margin-bottom:15px}.checkout-items{background:#f5f5f6;padding:12px;border-radius:10px;margin-bottom:15px}
+.checkout form{display:grid;gap:11px}.checkout input,.checkout textarea{width:100%;border:1px solid #ddd;border-radius:9px;padding:12px;font-size:15px}
+.checkout textarea{min-height:85px;resize:vertical}.pay-title{font-weight:bold;margin-top:5px}
+.pay{display:block;border:1px solid #ddd;padding:11px;border-radius:9px}.pay input{width:auto;margin-right:8px}
+#bkashBox{background:#fff5f8;padding:12px;border-radius:10px}.order-btn{border:0;background:#111;color:#fff;padding:13px;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer}
+#bkashBox small{display:block;color:#777;margin-top:7px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 18px;border-radius:25px;display:none}
+@media(max-width:750px){.grid{grid-template-columns:repeat(2,1fr)}.pic{height:145px}.hero h1{font-size:30px}.nav{flex-wrap:wrap}.search{order:3;flex-basis:100%}}
+@media(max-width:430px){.grid{gap:10px}.info{padding:10px}.pic{height:125px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="logo">JBOFA</div>
+    <div class="search"><input id="search" placeholder="পণ্য খুঁজুন..." oninput="render()"></div>
+    <button class="cart-btn" onclick="showCart()">🛒 Cart (<span id="count">0</span>)</button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>JBOFA Online Shop</h1>
+  <p>আপনার পছন্দের পণ্য সহজে খুঁজুন এবং অর্ডার করুন।</p>
+  <a class="shop-btn" href="#products">Shop Now →</a>
+</section>
+
+<main id="products">
+  <div class="section-title"><h2>জনপ্রিয় পণ্য</h2><span id="result"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <section id="checkout" class="checkout">
+    <h2>📦 অর্ডার / Checkout</h2>
+    <div id="checkoutItems" class="checkout-items">কার্টে পণ্য যোগ করুন।</div>
+    <form onsubmit="placeOrder(event)">
+      <input id="customerName" required placeholder="আপনার নাম">
+      <input id="phone" required inputmode="tel" placeholder="মোবাইল নম্বর">
+      <textarea id="address" required placeholder="ডেলিভারি ঠিকানা"></textarea>
+      <div class="pay-title">পেমেন্ট পদ্ধতি</div>
+      <label class="pay"><input type="radio" name="payment" value="bKash" checked> 💗 bKash</label>
+      <label class="pay"><input type="radio" name="payment" value="COD"> 💵 Cash on Delivery (COD)</label>
+      <div id="bkashBox">
+        <div style="font-weight:bold;margin-bottom:6px">💗 bKash Send Money</div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:8px">01878810960</div>
+        <small>এই নম্বরে bKash <b>Send Money</b> করুন। তারপর নিচে Transaction ID দিন।</small>
+        <input id="bkashNumber" type="hidden" value="01878810960">
+        <input id="trxId" required inputmode="text" placeholder="bKash Transaction ID (TrxID)">
+      </div>
+      <button class="order-btn" type="submit">অর্ডার কনফার্ম করুন</button>
+    </form>
+  </section>
+</main>
+
+<section id="admin" class="admin">
+  <div class="admin-head">
+    <h2>⚙️ JBOFA Admin Panel</h2>
+    <button onclick="toggleAdmin()">Hide / Show</button>
+  </div>
+  <div class="admin-grid">
+    <div class="admin-card"><b id="orderCount">0</b><span>Total Orders</span></div>
+    <div class="admin-card"><b id="salesTotal">৳0</b><span>Total Sales</span></div>
+    <div class="admin-card"><b id="productCount">8</b><span>Products</span></div>
+  </div>
+  <div class="orders">
+    <h3>📦 Orders</h3>
+    <div id="ordersList">এখনও কোনো অর্ডার নেই।</div>
+  </div>
+</section>
+
+<div id="toast"></div>
+<footer>© 2026 JBOFA — All Rights Reserved</footer>
+
+<script>
+const products=[
+ {id:1,name:"Premium T-Shirt",price:650,img:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=80"},
+ {id:2,name:"Stylish Shoes",price:1200,img:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80"},
+ {id:3,name:"Fashion Bag",price:850,img:"https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=700&q=80"},
+ {id:4,name:"Smart Watch",price:1800,img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80"},
+ {id:5,name:"Sunglasses",price:550,img:"https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=700&q=80"},
+ {id:6,name:"Cap",price:350,img:"https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=700&q=80"},
+ {id:7,name:"Headphone",price:950,img:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=80"},
+ {id:8,name:"Perfume",price:1100,img:"https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=700&q=80"}
+];
+let cart=[];
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const list=products.filter(p=>p.name.toLowerCase().includes(q));
+ document.getElementById("result").textContent=list.length+"টি পণ্য";
+ document.getElementById("grid").innerHTML=list.length?list.map(p=>`
+ <div class="card"><div class="pic"><img src="${p.img}" alt="${p.name}" loading="lazy"></div><div class="info">
+ <h3>${p.name}</h3><div class="price">৳ ${p.price.toLocaleString()}</div>
+ <button class="add" onclick="add(${p.id})">কার্টে যোগ করুন</button>
+ </div></div>`).join(""):`<div class="empty">কোনো পণ্য পাওয়া যায়নি</div>`;
+}
+function add(id){cart.push(products.find(p=>p.id===id));update();toast("পণ্যটি কার্টে যোগ হয়েছে ✓")}
+function update(){
+ document.getElementById("count").textContent=cart.length;
+ const box=document.getElementById("checkoutItems");
+ if(!cart.length){box.textContent="কার্টে পণ্য যোগ করুন।";return}
+ const total=cart.reduce((s,p)=>s+p.price,0);
+ box.innerHTML=cart.map(p=>`<div>• ${p.name} — ৳${p.price.toLocaleString()}</div>`).join("")+
+ `<hr style="margin:10px 0;border:0;border-top:1px solid #ddd"><b>মোট: ৳${total.toLocaleString()}</b>`;
+}
+let orders=JSON.parse(localStorage.getItem("jbofa_orders")||"[]");
+function placeOrder(e){
+ e.preventDefault();
+ if(!cart.length){toast("আগে কার্টে পণ্য যোগ করুন");return}
+ const method=document.querySelector('input[name="payment"]:checked').value;
+ document.getElementById("trxId").required = method==="bKash";
+ if(method==="bKash" && !document.getElementById("trxId").value.trim()){
+   toast("bKash Transaction ID দিন"); return;
+ }
+ const name=document.getElementById("customerName").value.trim();
+ const total=cart.reduce((s,p)=>s+p.price,0);
+ orders.unshift({
+   id:"JB"+Date.now().toString().slice(-6),name,
+   phone:document.getElementById("phone").value.trim(),
+   address:document.getElementById("address").value.trim(),
+   payment:method,total,items:cart.map(p=>p.name),
+trxId:method==="bKash" ? document.getElementById("trxId").value.trim() : "",
+status:"Pending"
+ });
+ localStorage.setItem("jbofa_orders",JSON.stringify(orders));
+ toast("ধন্যবাদ "+name+"! অর্ডার নেওয়া হয়েছে ✓");
+ e.target.reset(); cart=[]; update(); renderAdmin();
+}
+function renderAdmin(){
+ document.getElementById("orderCount").textContent=orders.length;
+ document.getElementById("salesTotal").textContent="৳"+orders.reduce((s,o)=>s+o.total,0).toLocaleString();
+ document.getElementById("productCount").textContent=products.length;
+ const box=document.getElementById("ordersList");
+ if(!orders.length){box.textContent="এখনও কোনো অর্ডার নেই।";return}
+ box.innerHTML=orders.map((o,i)=>`
+ <div class="order-row">
+ <select onchange="changeStatus(${i},this.value)">
+  ${["Pending","Confirmed","Shipped","Delivered","Cancelled"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
+ </select>
+ <b>${o.id}</b> — ${o.name}<br>
+ 📞 ${o.phone} · 💳 ${o.payment} · ৳${o.total.toLocaleString()}${o.trxId ? " · TrxID: "+o.trxId : ""}<br>
+ 📦 ${o.items.join(", ")}<br>
+ 📍 ${o.address}
+ </div>`).join("");
+}
+function changeStatus(i,status){
+ orders[i].status=status;
+ localStorage.setItem("jbofa_orders",JSON.stringify(orders));
+ renderAdmin(); toast("Order status updated");
+}
+function toggleAdmin(){
+ const a=document.getElementById("admin");
+ a.style.display=a.style.display==="none"?"block":"none";
+}
+renderAdmin();
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",1600)}
+function showCart(){
+ if(!cart.length){toast("আপনার কার্ট খালি");return}
+ const total=cart.reduce((s,p)=>s+p.price,0);
+ alert("JBOFA Cart\\n\\n"+cart.map(p=>"• "+p.name+" — ৳"+p.price).join("\\n")+"\\n\\nমোট: ৳"+total);
+}
+render();
+</script>
+</body>
+</html>
